@@ -1,0 +1,199 @@
+package 操作系统;
+
+import java.util.*;
+
+public class 单处理机系统的进程管理 {
+
+	static LinkedList<PCB> ready = new LinkedList<PCB>();
+	static LinkedList<PCB> running = new LinkedList<PCB>();
+	static LinkedList<PCB> block = new LinkedList<PCB>();
+	static LinkedList<PCB> free = new LinkedList<PCB>();
+	
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+		System.out.println("Now enter the number of free PCB:");
+		@SuppressWarnings("resource")
+		Scanner num  = new Scanner(System.in);
+		int NUM = num.nextInt();
+		
+		for(int SumOfPcb=0;SumOfPcb<NUM;SumOfPcb++) {
+			PCB pcb = new PCB();
+			free.add(pcb);
+		}
+		
+		
+		System.out.println("Next enter the single processor process management simulation:" 
+				 + "You can use 'create,terminate,block,schedule,wakeup' as your instruction");
+		
+
+		while(true) {
+		System.out.println("Please input your instruction:");
+		@SuppressWarnings("resource")
+		Scanner input = new Scanner(System.in);
+		String instruction = input.nextLine();
+		if(instruction.equals("create")) 
+			   {	System.out.println("Please input a name for your new process:");
+					@SuppressWarnings("resource")
+					Scanner input1 = new Scanner(System.in);
+					String name = input1.nextLine();
+					Create(ready,free,name);
+					PrintLinkedList(ready,running,block,free);
+			   }
+		
+		else if(instruction.equals("terminate")) 
+				{
+					Terminate(free,running);
+					PrintLinkedList(ready,running,block,free);
+				}
+		
+		else if(instruction.equals("block")) 
+				{
+					Block(block,running);
+					PrintLinkedList(ready,running,block,free);
+				}
+		else if(instruction.equals("schedule")) {
+			
+			Schedule(ready,running);
+			PrintLinkedList(ready,running,block,free);
+		}
+		else if(instruction.equals("wakeup"))
+				{
+					Wakeup(block,ready);
+					PrintLinkedList(ready,running,block,free);
+				}
+		else if(instruction.equals("end"))
+			break;
+		}
+	
+	}
+
+
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void PrintLinkedList(LinkedList list0,LinkedList list1,LinkedList list2,LinkedList list3) {
+	  /*LinkedList<PCB>[] list = (LinkedList<PCB>[])new LinkedList[4];
+	        list[0] = list0;
+	  		list[1] = list1;
+	  		list[2] = list2;
+	  		list[3] = list3;
+	   */         
+	  ArrayList<LinkedList<PCB>> list = new ArrayList<>();
+	  list.add(0,list0);
+	  list.add(1,list1);
+	  list.add(2,list2);
+	  list.add(3,list3);                           
+	  
+	  for(int i=0;i<4;i++) {
+		  if(i==0) System.out.print("The ready queue(name,state,address,time):");
+		  if(i==1) System.out.print("The running queue(name,state,address,time):");
+		  if(i==2) System.out.print("The block queue(name,state,address,time):");
+		  if(i==3) System.out.print("The free queue(name,state,address,time):");
+		  System.out.print(list.get(i).size() + "\n");
+		  for(int j = 0;j < list.get(i).size();j++) {
+			  	if(i==0) System.out.print(" " + list.get(0).get(j).name + "\t" + list.get(0).get(j).state + "\t" + list.get(0).get(j).address + "\t" + list.get(0).get(j).time + "\n");
+		  		if(i==1) System.out.print(" " + list.get(1).get(j).name + "\t" + list.get(1).get(j).state + "\t" + list.get(1).get(j).address + "\t" + list.get(1).get(j).time + "\n");
+		  		if(i==2) System.out.print(" " + list.get(2).get(j).name + "\t" + list.get(2).get(j).state + "\t" + list.get(2).get(j).address + "\t" + list.get(2).get(j).time + "\n");
+		  		if(i==3) System.out.print(" " + list.get(3).get(j).name + "\t" + list.get(3).get(j).state + "\t" + list.get(3).get(j).address + "\t" + list.get(3).get(j).time + "\n");
+		  }
+		  
+	  }
+	
+	}
+	public static void Create(LinkedList<PCB> ready,LinkedList<PCB> free,String name) {
+
+		if(free.isEmpty()) {
+			System.out.println("Sorry!There is no pcb to create a new process.");
+		}
+		else {
+			PCB newPcb = free.remove();
+			newPcb.name = name;
+			newPcb.state = "ready";
+			newPcb.address = "first-memory OR second-memory";
+			newPcb.time = (int)(1 + Math.random()*10);
+			ready.add(newPcb);
+		}
+		
+	}
+	
+	public static void Terminate(LinkedList<PCB> free,LinkedList<PCB> running){
+		
+		PCB pcb = (PCB) running.remove();
+		pcb.state = "terminate";
+		pcb.time = 0;
+		pcb.address = "first-memory";
+		free.add(new PCB());
+		if(!ready.isEmpty()) {
+			PCB newpcb = (PCB) ready.remove();
+			pcb.state = "running";
+			pcb.address = "first-memory";
+			running.add(newpcb);
+			
+		}
+	
+    }
+
+	public static void Schedule(LinkedList<PCB> ready,LinkedList<PCB> running){
+		PCB pcb = (PCB) ready.remove();
+		pcb.state = "running";
+		pcb.address = "first-memory";
+		PCB runned = running.poll();
+		
+		running.add(pcb);
+		if (runned != null && runned.time-2 > 0) {
+			runned.time -= 2;
+			runned.state = "ready";
+			ready.add(runned);	
+		}
+		else if (runned != null && runned.time-2 >= 0) {
+			
+			free.add(new PCB());
+	}
+}
+	
+	public static void Wakeup(LinkedList<PCB> block,LinkedList<PCB> ready){
+		
+		PCB pcb = (PCB) block.remove();
+		pcb.state = "ready";
+		pcb.address = "first-memory";
+		ready.add(pcb);
+		
+	}
+	
+	public static void Block(LinkedList<PCB> block,LinkedList<PCB> running){
+		
+		PCB pcb = (PCB) running.remove();
+		pcb.state = "block";
+		pcb.address = "first-memory OR second-memory";
+		block.add(pcb);
+		if (!ready.isEmpty()) {
+			PCB readyFirst=ready.poll();
+			readyFirst.state="running";
+			running.add(readyFirst);
+			
+			
+		}
+    }
+    
+	
+}
+
+class PCB{
+	String name;
+	String state = "ready";
+	int time = 0;
+	String address;
+	PCB(){
+		
+	}
+	PCB(String name){
+		this.name = name;
+	}
+	
+}
+
+	
+
+	
+
