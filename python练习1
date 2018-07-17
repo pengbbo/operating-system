@@ -1,0 +1,16 @@
+
+r = float(input('请输入圆的半径'))
+pi = 3.14
+C = 2*pi*r
+S = pi*r*r
+print('半径为',r,'的圆，周长为',C,'面积为',S)
+
+C = float(input('请输入圆的周长'))
+r = C/(2*pi)
+S = pi*r*r
+print('周长为',C,'的圆，半径为',r,'面积为',S)
+
+S = float(input('请输入圆的面积'))
+r = (S/pi)**0.5
+C = 2*pi*r
+print('面积为',S,'的圆，半径为',r,'周长为',C)
